@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { Button } from './ui/button';
 import type { RootState } from '@/store/store';
@@ -20,22 +20,28 @@ import {
   CardTitle,
 } from './ui/card';
 import {
-  decreaseProductQuantity,
-  increaseProductQuantity,
-  removeProduct,
-} from '@/features/cart/cartSlice';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useGetUsersQuery } from '@/services/users';
 import type { UserType } from '@/constants/types';
+import { selectUser } from '@/features/cart/userSlice';
+import {
+  createUserCart,
+  decreaseProductQuantityForSelectedUser,
+  increaseProductQuantityForSelectedUser,
+  removeProductForSelectedUser,
+} from '@/features/cart/cartSlice';
+import { useDispatch } from '@/hooks/useDispatch';
 
 export const Header = () => {
   const dispatch = useDispatch();
 
-  const cart = useSelector((state: RootState) => state.cart);
+  const selectedUserId = useSelector((state: RootState) => state.user.id);
+  const cart = useSelector((state: RootState) =>
+    state.cart.users.find((cart) => cart.userId === selectedUserId)
+  );
 
   const { data: users, isLoading } = useGetUsersQuery({});
 
@@ -43,7 +49,7 @@ export const Header = () => {
     return <h1>Loading</h1>;
   }
 
-  console.log(users);
+  console.log(cart);
 
   return (
     <header className="p-5 flex justify-between">
@@ -59,20 +65,28 @@ export const Header = () => {
                 className="h-10 w-10 object-cover rounded-full"
               />
               <h1>{user.name}</h1>
+              <Button
+                onClick={() => {
+                  dispatch(selectUser(user));
+                  dispatch(createUserCart(user));
+                }}
+              >
+                Select
+              </Button>
             </div>
           ))}
         </PopoverContent>
       </Popover>
       <Drawer direction="right">
         <DrawerTrigger asChild>
-          <Button>Cart {cart.products.length}</Button>
+          <Button>Cart {cart?.products.length}</Button>
         </DrawerTrigger>
         <DrawerContent className="overflow-y-auto">
           <DrawerHeader>
             <DrawerTitle>Your shopping cart</DrawerTitle>
           </DrawerHeader>
-          {cart.products.length > 0 ? (
-            cart.products.map((product) => (
+          {cart?.products && cart.products.length > 0 ? (
+            cart?.products.map((product) => (
               <Card
                 className="grid grid-cols-4 w-full mb-4 items-center gap-4 m-2 p-3"
                 key={product.id}
@@ -98,14 +112,22 @@ export const Header = () => {
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"
-                      onClick={() => dispatch(decreaseProductQuantity(product))}
+                      onClick={() =>
+                        dispatch(
+                          decreaseProductQuantityForSelectedUser(product)
+                        )
+                      }
                     >
                       {'-'}
                     </Button>
                     <span>{product.quantity}</span>
                     <Button
                       size="sm"
-                      onClick={() => dispatch(increaseProductQuantity(product))}
+                      onClick={() =>
+                        dispatch(
+                          increaseProductQuantityForSelectedUser(product)
+                        )
+                      }
                     >
                       {'+'}
                     </Button>
@@ -113,7 +135,9 @@ export const Header = () => {
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => dispatch(removeProduct(product))}
+                    onClick={() =>
+                      dispatch(removeProductForSelectedUser(product))
+                    }
                   >
                     Remove
                   </Button>
@@ -127,10 +151,10 @@ export const Header = () => {
           )}
           <DrawerFooter>
             <DrawerDescription className="p-3">
-              Total Price: {cart.totalPrice}
+              Total Price: {cart?.totalPrice}
             </DrawerDescription>
             <DrawerDescription className="p-3">
-              Total Quantity: {cart.totalQuantity}
+              Total Quantity: {cart?.totalQuantity}
             </DrawerDescription>
             <Button>Proceed to payment</Button>
             <DrawerClose asChild>

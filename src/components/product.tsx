@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import type { ProductType } from '@/constants/types';
 import {
@@ -11,16 +11,20 @@ import {
 } from '@/components/ui/card';
 import { Button } from './ui/button';
 import {
-  addProduct,
-  decreaseProductQuantity,
-  increaseProductQuantity,
+  addProductForSelectedUser,
+  decreaseProductQuantityForSelectedUser,
+  increaseProductQuantityForSelectedUser,
 } from '@/features/cart/cartSlice';
 import type { RootState } from '@/store/store';
+import { useDispatch } from '@/hooks/useDispatch';
 
 export const Product = ({ product }: { product: ProductType }) => {
   const dispatch = useDispatch();
+  const selectedUserId = useSelector((state: RootState) => state.user.id);
   const existingProduct = useSelector((state: RootState) =>
-    state.cart.products.find((innerProduct) => innerProduct.id === product.id)
+    state.cart.users
+      .find((cart) => cart.userId === selectedUserId)
+      ?.products.find((innerProduct) => innerProduct.id === product.id)
   );
 
   return (
@@ -42,14 +46,18 @@ export const Product = ({ product }: { product: ProductType }) => {
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              onClick={() => dispatch(decreaseProductQuantity(product))}
+              onClick={() =>
+                dispatch(decreaseProductQuantityForSelectedUser(product))
+              }
             >
               {'-'}
             </Button>
             <span>{existingProduct.quantity}</span>
             <Button
               size="sm"
-              onClick={() => dispatch(increaseProductQuantity(product))}
+              onClick={() =>
+                dispatch(increaseProductQuantityForSelectedUser(product))
+              }
             >
               {'+'}
             </Button>
@@ -57,7 +65,7 @@ export const Product = ({ product }: { product: ProductType }) => {
         ) : (
           <Button
             className="w-full"
-            onClick={() => dispatch(addProduct(product))}
+            onClick={() => dispatch(addProductForSelectedUser(product))}
           >
             Add to Cart
           </Button>

@@ -7,10 +7,19 @@ export type ProductType = {
   quantity: number;
 };
 
+// export type CartType = {
+//   products: ProductType[];
+//   totalPrice: number;
+//   totalQuantity: number;
+// };
+
 export type CartType = {
-  products: ProductType[];
-  totalPrice: number;
-  totalQuantity: number;
+  users: {
+    products: ProductType[];
+    totalPrice: number;
+    totalQuantity: number;
+    userId: number;
+  }[];
 };
 
 export type UserType = {
