@@ -15,8 +15,8 @@ import {
   decreaseProductQuantityForSelectedUser,
   increaseProductQuantityForSelectedUser,
 } from '@/features/cart/cartSlice';
-import type { RootState } from '@/store/store';
 import { useDispatch } from '@/hooks/useDispatch';
+import type { RootState } from '@/store/store';
 
 export const Product = ({ product }: { product: ProductType }) => {
   const dispatch = useDispatch();
